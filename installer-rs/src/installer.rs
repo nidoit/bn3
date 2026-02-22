@@ -6,6 +6,20 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
+/// Map X11 keyboard layout names to Linux console (kbd) keymap names.
+/// Layouts not listed here are assumed to match their X11 name.
+fn console_keymap(x11_layout: &str) -> &str {
+    match x11_layout {
+        "kr" => "us",        // Korean uses US QWERTY at console level; Hangul via input method
+        "cn" => "us",        // Chinese uses US QWERTY at console level
+        "tw" => "us",        // Taiwanese uses US QWERTY at console level
+        "jp" => "jp106",     // Japanese console keymap
+        "latam" => "la-latin1", // Latin American
+        "gb" => "uk",        // British English
+        other => other,
+    }
+}
+
 pub struct Installer {
     config: Config,
     error_message: String,
@@ -748,14 +762,16 @@ nameserver 1.1.1.1\n";
         );
 
         // Always write vconsole.conf with KEYMAP and FONT
+        // Map X11 layout to console keymap (e.g. "kr" -> "us")
         // Missing FONT causes systemd-vconsole-setup.service to fail at boot
-        let keymap = self
+        let x11_keymap = self
             .config
             .locale
             .keyboards
             .first()
-            .cloned()
-            .unwrap_or_else(|| "us".to_string());
+            .map(|s| s.as_str())
+            .unwrap_or("us");
+        let keymap = console_keymap(x11_keymap);
         let vconsole = format!("KEYMAP={keymap}\nFONT=ter-v16n\n");
         self.write_file(
             &format!("{}/etc/vconsole.conf", self.mount_point),

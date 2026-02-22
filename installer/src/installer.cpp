@@ -23,6 +23,18 @@ std::string exec(const std::string& cmd) {
     return result;
 }
 
+/// Map X11 keyboard layout names to Linux console (kbd) keymap names.
+/// Layouts not listed here are assumed to match their X11 name.
+std::string console_keymap(const std::string& x11_layout) {
+    if (x11_layout == "kr")    return "us";        // Korean uses US QWERTY at console level
+    if (x11_layout == "cn")    return "us";        // Chinese uses US QWERTY at console level
+    if (x11_layout == "tw")    return "us";        // Taiwanese uses US QWERTY at console level
+    if (x11_layout == "jp")    return "jp106";     // Japanese console keymap
+    if (x11_layout == "latam") return "la-latin1"; // Latin American
+    if (x11_layout == "gb")    return "uk";        // British English
+    return x11_layout;
+}
+
 }  // namespace
 
 Installer::Installer(const Config& config) : config_(config) {}
@@ -587,8 +599,10 @@ bool Installer::configure_locale() {
     write_file(mount_point_ + "/etc/locale.conf", locale_conf);
 
     // Always write vconsole.conf with KEYMAP and FONT
+    // Map X11 layout to console keymap (e.g. "kr" -> "us")
     // Missing FONT causes systemd-vconsole-setup.service to fail at boot
-    std::string keymap = config_.locale.keyboards.empty() ? "us" : config_.locale.keyboards[0];
+    std::string x11_keymap = config_.locale.keyboards.empty() ? "us" : config_.locale.keyboards[0];
+    std::string keymap = console_keymap(x11_keymap);
     std::string vconsole = "KEYMAP=" + keymap + "\nFONT=ter-v16n\n";
     write_file(mount_point_ + "/etc/vconsole.conf", vconsole);
 
