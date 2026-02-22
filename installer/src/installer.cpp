@@ -1050,6 +1050,28 @@ julia "$SYSCHK_FILE"
     }
 
     // ========================================
+    // 4d. Create Easy Install App desktop shortcut
+    // ========================================
+    {
+        std::string desktop_dir = user_home + "/Desktop";
+        run_command("mkdir -p " + desktop_dir);
+
+        std::string appinst_desktop = R"([Desktop Entry]
+Type=Application
+Name=Easy Install App
+Comment=Install additional Blunux apps easily
+Exec=sh -c 'curl -fsSL https://raw.githubusercontent.com/JaewooJoung/linux/main/blunux-appinst.run -o /tmp/blunux-appinst.run && chmod +x /tmp/blunux-appinst.run && sudo /tmp/blunux-appinst.run'
+Icon=system-software-install
+Terminal=true
+Categories=System;PackageManager;
+)";
+        std::string desktop_file_path = desktop_dir + "/blunux-appinst.desktop";
+        write_file(desktop_file_path, appinst_desktop);
+        run_command("chmod +x " + desktop_file_path);
+        tui::print_info("Created Desktop shortcut: Easy Install App");
+    }
+
+    // ========================================
     // 5. Configure kime input method
     // ========================================
     if (config_.input_method.enabled && config_.input_method.engine == "kime") {

@@ -1248,7 +1248,26 @@ julia "$SYSCHK_FILE"
             tui::print_info("Created ~/syschk.sh - system check script");
         }
 
-        // 6. Configure kime input method
+        // 6. Create Easy Install App desktop shortcut
+        {
+            let desktop_dir = format!("{user_home}/Desktop");
+            self.run_command(&format!("mkdir -p {desktop_dir}"));
+
+            let appinst_desktop = "[Desktop Entry]\n\
+                                   Type=Application\n\
+                                   Name=Easy Install App\n\
+                                   Comment=Install additional Blunux apps easily\n\
+                                   Exec=sh -c 'curl -fsSL https://raw.githubusercontent.com/JaewooJoung/linux/main/blunux-appinst.run -o /tmp/blunux-appinst.run && chmod +x /tmp/blunux-appinst.run && sudo /tmp/blunux-appinst.run'\n\
+                                   Icon=system-software-install\n\
+                                   Terminal=true\n\
+                                   Categories=System;PackageManager;\n";
+            let desktop_file_path = format!("{desktop_dir}/blunux-appinst.desktop");
+            self.write_file(&desktop_file_path, appinst_desktop);
+            self.run_command(&format!("chmod +x {desktop_file_path}"));
+            tui::print_info("Created Desktop shortcut: Easy Install App");
+        }
+
+        // 7. Configure kime input method
         if self.config.input_method.enabled && self.config.input_method.engine == "kime" {
             tui::print_info("Configuring kime input method...");
 
