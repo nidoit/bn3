@@ -590,6 +590,7 @@ function configure_desktop_autologin(profile_dir, desktop)
     # Create group file addition
     group_file = joinpath(passwd_dir, "group")
     open(group_file, "a") do f
+        println(f, "autologin:x:999:live")
         println(f, "live:x:1000:")
     end
 
