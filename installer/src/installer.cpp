@@ -669,6 +669,10 @@ bool Installer::configure_users() {
 
     // Configure SDDM autologin if enabled
     if (config_.install.autologin) {
+        // Create autologin group and add user to it (required by PAM for SDDM autologin)
+        run_chroot("groupadd -rf autologin");
+        run_chroot("usermod -aG autologin " + config_.install.username);
+
         std::string sddm_conf_dir = mount_point_ + "/etc/sddm.conf.d";
         run_command("mkdir -p " + sddm_conf_dir);
 

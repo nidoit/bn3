@@ -828,6 +828,13 @@ nameserver 1.1.1.1\n";
 
         // Configure SDDM autologin
         if self.config.install.autologin {
+            // Create autologin group and add user to it (required by PAM for SDDM autologin)
+            self.run_chroot("groupadd -rf autologin");
+            self.run_chroot(&format!(
+                "usermod -aG autologin {}",
+                self.config.install.username
+            ));
+
             let sddm_conf_dir = format!("{}/etc/sddm.conf.d", self.mount_point);
             self.run_command(&format!("mkdir -p {sddm_conf_dir}"));
 
